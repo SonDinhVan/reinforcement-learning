@@ -13,9 +13,11 @@ For convenience, both training and testing scripts are provided in Jupyter noteb
 5. To be added...
 
 **Dependencies**
+
 Refer to the environment.yml file to create the virtual environment. Note that gym is not included in this file, as its installation method may vary across different operating systems. Ensure that you have gym installed correctly on your machine.
 
 **Hardware Used**
+
 The experiments were conducted on a MacBook Pro 16-inch M1 with CPU. The GPU was not activated due to its inconsistent performance.
 
 **Discussion**
