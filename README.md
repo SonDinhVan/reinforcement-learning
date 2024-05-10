@@ -21,7 +21,9 @@ Refer to the environment.yml file to create the virtual environment. Note that `
 The experiments were conducted on a MacBook Pro 16-inch M1 with CPU. The GPU was not activated due to its inconsistent performance.
 
 **Discussion**
+
 1. Deep-Q Network (DQN)
+
 a) Cart-pole:
 Achieved a score of 500 after approximately 15 minutes of training.
 Further training would likely result in even higher scores.
