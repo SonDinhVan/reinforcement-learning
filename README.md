@@ -1,21 +1,25 @@
-Description: This repo shows the implementation of some RL algorithms. The algorithms (agents) are located in module. To use it, install the entire package via 'pip install -e.'. To be convenient, the training and testing are located in notebooks.
+This repository showcases the implementation of various Reinforcement Learning (RL) algorithms. The algorithms, or agents, are organized within modules for ease of use. To get started, install the entire package via pip: 'pip install -e.'
+For convenience, both training and testing scripts are provided in Jupyter notebooks.
 
-Algorithms tested: 
+**Algorithms Implemented**
 1. Deep-Q Network (DQN)
-2. To be added ...
+2. To be added...
 
-Games/environment tested:
+**Games/Environments Tested**
 1. Cart-pole
-2. Lunar lander - discrete actions
-3. Lunar lander - continuous actions
-4. Bipedal walker - continuous actions
-5. To be added ...
+2. Lunar Lander (discrete actions)
+3. Lunar Lander (continuous actions)
+4. Bipedal Walker (continuous actions)
+5. To be added...
 
-Dependencies: Refer to environment.yml to create the virtual environment. This file doesn't include gym since gym might be installed differently on different OS. So make sure you have gym installed correctly on your machine.
+**Dependencies**
+Refer to the environment.yml file to create the virtual environment. Note that gym is not included in this file, as its installation method may vary across different operating systems. Ensure that you have gym installed correctly on your machine.
 
-Hardware: Macbook Pro 16-inch M1 with CPU. GPU was not activated due to its inconsistent performance.
+**Hardware Used**
+The experiments were conducted on a MacBook Pro 16-inch M1 with CPU. The GPU was not activated due to its inconsistent performance.
 
-Discussion:
-
-1) Deep-Q Network (DQN):
-    a) Cart-pole: Easily achieve a score of 500 after about 15 minutes of training. If the training were performed longer, the score would be even higher.
+**Discussion**
+1. Deep-Q Network (DQN)
+a) Cart-pole:
+Achieved a score of 500 after approximately 15 minutes of training.
+Further training would likely result in even higher scores.
