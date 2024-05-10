@@ -1,4 +1,4 @@
-This repository showcases the implementation of various Reinforcement Learning (RL) algorithms. The algorithms, or agents, are organized within modules for ease of use. To get started, install the entire package via pip: '** pip install -e. **'
+This repository showcases the implementation of various Reinforcement Learning (RL) algorithms. The algorithms, or agents, are organized within modules for ease of use. To get started, install the entire package via pip: `pip install -e.`
 For convenience, both training and testing scripts are provided in Jupyter notebooks.
 
 **Algorithms Implemented**
@@ -9,12 +9,12 @@ For convenience, both training and testing scripts are provided in Jupyter noteb
 1. Cart-pole
 2. Lunar Lander (discrete actions)
 3. Lunar Lander (continuous actions)
-4. Bipedal Walker (continuous actions)
+4. Bipedal Walker
 5. To be added...
 
 **Dependencies**
 
-Refer to the environment.yml file to create the virtual environment. Note that gym is not included in this file, as its installation method may vary across different operating systems. Ensure that you have gym installed correctly on your machine.
+Refer to the environment.yml file to create the virtual environment. Note that `gym` is not included in this file, as its installation method may vary across different operating systems. Ensure that you have `gym` installed correctly on your machine.
 
 **Hardware Used**
 
