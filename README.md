@@ -1,4 +1,4 @@
-This repository showcases the implementation of various Reinforcement Learning (RL) algorithms. The algorithms, or agents, are organized within modules for ease of use. To get started, install the entire package via pip: 'pip install -e.'
+This repository showcases the implementation of various Reinforcement Learning (RL) algorithms. The algorithms, or agents, are organized within modules for ease of use. To get started, install the entire package via pip: '** pip install -e. **'
 For convenience, both training and testing scripts are provided in Jupyter notebooks.
 
 **Algorithms Implemented**
