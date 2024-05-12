@@ -29,6 +29,6 @@ Further training would likely result in even higher scores.
 
 | Demo GIF                                             | Score over episodes                                                  |
 |------------------------------------------------------|--------------------------------------------------------------------|
-| <img src="docs/dqn_cartpole/dqn_cartpole.gif" width="250"/> | <img src="docs/dqn_cartpole/dqn_cartpole_score_over_episodes.png" width="400"/>   |
+| <img src="docs/dqn_cartpole/dqn_cartpole.gif" width="400"/> | <img src="docs/dqn_cartpole/dqn_cartpole_score_over_episodes.png" width="400"/>   |
 
 
