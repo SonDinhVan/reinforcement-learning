@@ -26,3 +26,8 @@ The experiments were conducted on a MacBook Pro 16-inch M1 with CPU. The GPU was
 a) Cart-pole:
 Achieved a score of 500 after approximately 15 minutes of training.
 Further training would likely result in even higher scores.
+
+| Demo GIF                                        | DQN Architecture                                        |
+|-------------------------------------------------|----------------------------------------------------------|
+| ![Demo GIF](docs/dqn_cartpole/dqn_cartpole.gif)         | ![DQN Architecture](docs/dqn_cartpole/dqn_cartpole_loss_over_episodes.png) |
+
