@@ -24,7 +24,7 @@ The experiments were conducted on a MacBook Pro 16-inch M1 with CPU. The GPU was
 
 1. Deep-Q Network (DQN) \
 a) Cart-pole:
-Achieved a score of 500 after approximately 15 minutes of training.
+Achieved a score of > 1000 after approximately 30 minutes of training.
 Further training would likely result in even higher scores.
 
 | Demo GIF                                             | Score over episodes                                                  |
