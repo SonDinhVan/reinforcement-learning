@@ -24,11 +24,13 @@ The experiments were conducted on a MacBook Pro 16-inch M1 with CPU. The GPU was
 
 1. Deep-Q Network (DQN) \
 a) Cart-pole:
-Achieved a score of > 1000 after approximately 30 minutes of training.
+Achieved a score of > 1000 after about 30 minutes of training.
 Further training would likely result in even higher scores.
 
-| Demo GIF                                             | Score over episodes                                                  |
-|------------------------------------------------------|--------------------------------------------------------------------|
-| <img src="docs/dqn_cartpole/dqn_cartpole.gif" width="400"/> | <img src="docs/dqn_cartpole/dqn_cartpole_score_over_episodes.png" width="400"/>   |
+<img src="docs/dqn_cartpole/dqn_cartpole.gif" width="400"/>  <img src="docs/dqn_cartpole/dqn_cartpole_score_over_episodes.png" width="400"/> 
 
+b) Lunar Lander:
+Achieved a score of > 250 after about 30 minutes of training. 
+Note: Sometimes, during training, the ship doesn't move, e.g., it will stay around one position for a long time, leading to a very long training. To deal with this, I stopped an episode when the number of time steps spending on landing exceeds a threshold, e.g., 1000 time steps.
 
+<img src="docs/dqn_lunar_lander/lunar_lander.gif" width="400"/>  <img src="docs/dqn_lunar_lander/dqn_lunalander_loss_over_episodes.png" width="400"/> 

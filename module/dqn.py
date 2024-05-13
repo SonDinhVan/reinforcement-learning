@@ -105,8 +105,11 @@ class DQNAgent:
             return
         # sample a batch, convert to tensors
         minibatch = random.sample(self.memory, min(self.batch_size, len(self.memory)))
-        states, actions, rewards, next_states, dones = map(tf.convert_to_tensor, zip(*minibatch))
-        dones = tf.cast(dones, tf.float32)
+        # Convert all elements to tf.float32
+        states, actions, rewards, next_states, dones = map(
+            lambda x: tf.convert_to_tensor(x, dtype=tf.float32), zip(*minibatch)
+        )
+        actions = tf.cast(actions, dtype=tf.int32)
 
         # Q values of next states
         q_targets_next = self.target_model(tf.squeeze(next_states))
