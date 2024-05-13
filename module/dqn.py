@@ -115,7 +115,7 @@ class DQNAgent:
         q_targets_next = self.target_model(tf.squeeze(next_states))
         targets = rewards + self.discount_factor * tf.reduce_max(q_targets_next, axis=1) * (1 - dones)
 
-        # calculate loss function and its gradient
+        # calculate the loss function and its gradient
         with tf.GradientTape() as tape:
             # Q values of current states
             q_values = self.online_model(tf.squeeze(states))
@@ -128,6 +128,7 @@ class DQNAgent:
             # update the weights of the online model
             self.opt.apply_gradients(zip(gradients, self.online_model.trainable_variables))
 
+        # update the target model every update_period steps
         self.train_step += 1
         if self.train_step % self.update_period == 0:
             self.update_target_model()
