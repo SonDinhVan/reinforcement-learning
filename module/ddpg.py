@@ -31,6 +31,9 @@ class DDPGAgent():
         self.lr_actor = lr_actor
         self.lr_critic = lr_critic
 
+        self.min_action = min_action
+        self.max_action = max_action
+
         self.actor_main = self.build_actor_network()
         self.actor_target = self.build_actor_network()
 
@@ -41,9 +44,6 @@ class DDPGAgent():
 
         self.opt_actor = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_actor)
         self.opt_critic = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_critic)
-
-        self.min_action = min_action
-        self.max_action = max_action
 
         self.train_step = 0
         self.replace_step = replace_step
@@ -59,8 +59,8 @@ class DDPGAgent():
         inputs = Input(shape=(self.state_size,))
         out = Dense(256, activation="relu")(inputs)
         out = Dense(256, activation="relu")(out)
-        outputs = Dense(1, activation="tanh", kernel_initializer=last_init)(out)
-        outputs = outputs * 2
+        outputs = Dense(self.action_size, activation="tanh", kernel_initializer=last_init)(out)
+        outputs = outputs * self.max_action
 
         model = Model(inputs, outputs)
 
@@ -83,7 +83,7 @@ class DDPGAgent():
 
         out = Dense(256, activation="relu")(concat)
         out = Dense(256, activation="relu")(out)
-        outputs = Dense(self.action_size)(out)
+        outputs = Dense(1)(out)
 
         # Outputs single value for give state-action
         model = Model([state_input, action_input], outputs)
@@ -124,7 +124,7 @@ class DDPGAgent():
 
         for (weight, target) in zip(self.critic_main.weights, self.critic_target.weights):
             # update the target values
-            target.assign(weight * tau + target * (1 - tau)) 
+            target.assign(weight * tau + target * (1 - tau))
 
     def learn(self):
         """
