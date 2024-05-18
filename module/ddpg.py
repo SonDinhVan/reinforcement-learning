@@ -2,17 +2,20 @@ import numpy as np
 import random
 
 import tensorflow as tf
-from keras.layers import Dense, Dropout, BatchNormalization
+from keras.layers import Dense, Dropout, BatchNormalization, Input, Concatenate
 from keras.optimizers import Adam
-from keras.models import Sequential
+from keras.models import Sequential, Model
+from keras.initializers import RandomUniform
 
 from collections import deque
+
+# Original paper: CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING: https://arxiv.org/pdf/1509.02971
 
 
 class DDPGAgent():
     def __init__(self, state_size, action_size,
                  lr_actor=0.001, lr_critic=0.001,
-                 gamma=0.95, batch_size=32,
+                 gamma=0.95, batch_size=64,
                  memory_size=10**6, min_start=10000,
                  min_action=-1, max_action=1, noise=0.1,
                  replace_step=500) -> None:
@@ -34,7 +37,7 @@ class DDPGAgent():
         self.critic_main = self.build_critic_network()
         self.critic_target = self.build_critic_network()
 
-        self.update_target(tau=1.0)
+        self.update_target(tau=1)
 
         self.opt_actor = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_actor)
         self.opt_critic = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_critic)
@@ -51,12 +54,15 @@ class DDPGAgent():
         """
         The actor network
         """
-        model = Sequential()
-        model.add(Dense(128, input_dim=self.state_size, activation='relu'))
-        # model.add(Dropout(0.2))
-        model.add(Dense(128, activation='relu'))
-        # model.add(Dropout(0.2))
-        model.add(Dense(self.action_size, activation='tanh'))
+        last_init = RandomUniform(minval=-0.003, maxval=0.003)
+
+        inputs = Input(shape=(self.state_size,))
+        out = Dense(256, activation="relu")(inputs)
+        out = Dense(256, activation="relu")(out)
+        outputs = Dense(1, activation="tanh", kernel_initializer=last_init)(out)
+        outputs = outputs * 2
+
+        model = Model(inputs, outputs)
 
         return model
 
@@ -65,12 +71,22 @@ class DDPGAgent():
         The critic network used for estimating the value function
         The input is [state, action], output is the Q(s, a)
         """
-        model = Sequential()
-        model.add(Dense(256, input_dim=self.state_size + self.action_size, activation='relu'))
-        # model.add(Dropout(0.2))
-        model.add(Dense(256, activation='relu'))
-        # model.add(Dropout(0.2))
-        model.add(Dense(1, activation='linear'))
+        state_input = Input(shape=(self.state_size,))
+        state_out = Dense(32, activation="relu")(state_input)
+
+        # Action as input
+        action_input = Input(shape=(self.action_size,))
+        action_out = Dense(32, activation="relu")(action_input)
+
+        # Both are passed through separate layer before concatenating
+        concat = Concatenate()([state_out, action_out])
+
+        out = Dense(256, activation="relu")(concat)
+        out = Dense(256, activation="relu")(out)
+        outputs = Dense(self.action_size)(out)
+
+        # Outputs single value for give state-action
+        model = Model([state_input, action_input], outputs)
 
         return model
 
@@ -102,41 +118,49 @@ class DDPGAgent():
         """
         Updae the target model using soft update.
         """
-        # Iterate through the weights of the target and main models
-        for target_weights, main_weights in zip(self.actor_target.weights, self.actor_main.weights):
-            # Update the target model weights with a soft update
-            target_weights.assign(tau * main_weights + (1 - tau) * target_weights)
+        for (weight, target) in zip(self.actor_main.weights, self.actor_target.weights):
+            # update the target values
+            target.assign(weight * tau + target * (1 - tau))
 
-        for target_weights, main_weights in zip(self.critic_target.weights, self.critic_main.weights):
-            # Update the target model weights with a soft update
-            target_weights.assign(tau * main_weights + (1 - tau) * target_weights)
+        for (weight, target) in zip(self.critic_main.weights, self.critic_target.weights):
+            # update the target values
+            target.assign(weight * tau + target * (1 - tau)) 
 
     def learn(self):
+        """
+        Training using the samples from memory.
+        """
         if len(self.memory) < self.min_start:
             return
         # sample a minibatch from the memory
         minibatch = random.sample(self.memory, min(self.memory_size, self.batch_size))
         states, actions, rewards, next_states, dones = [tf.convert_to_tensor(x, dtype=tf.float32) for x in zip(*minibatch)]
 
+        states = tf.squeeze(states)
+        rewards = tf.reshape(rewards, shape=(-1, 1))
+        next_states = tf.squeeze(next_states)
+
+        # Critic loss
         with tf.GradientTape() as tape1:
-            actions_next_states = self.actor_target(tf.squeeze(next_states))
-            Q_value_next_states = tf.squeeze(self.critic_target(tf.concat([tf.squeeze(next_states), actions_next_states], axis=1)))
+            actions_next_states = self.actor_target(next_states)
+            Q_value_next_states = self.critic_target([next_states, actions_next_states])
             y = rewards + self.gamma * Q_value_next_states * (1 - dones)
 
-            Q_value_current_states = tf.squeeze(self.critic_main(tf.concat([tf.squeeze(states), actions], axis=1)))
+            Q_value_current_states = self.critic_main([states, actions])
             critic_loss = tf.reduce_mean(tf.square(y - Q_value_current_states))
-
-        with tf.GradientTape() as tape2:
-            new_actions = self.actor_main(tf.squeeze(states))
-            actor_loss = tf.squeeze(self.critic_main(tf.concat([tf.squeeze(states), new_actions], axis=1)))
-            actor_loss = - tf.reduce_mean(actor_loss)
 
         grads1 = tape1.gradient(critic_loss, self.critic_main.trainable_variables)
         self.opt_critic.apply_gradients(zip(grads1, self.critic_main.trainable_variables))
+
+        # Actor loss
+        with tf.GradientTape() as tape2:
+            new_actions = self.actor_main(states)
+            Q_value_current_states = self.critic_main([states, new_actions])
+            actor_loss = - tf.reduce_mean(Q_value_current_states)
 
         grads2 = tape2.gradient(actor_loss, self.actor_main.trainable_variables)
         self.opt_actor.apply_gradients(zip(grads2, self.actor_main.trainable_variables))
 
         if self.train_step % self.replace_step == 0:
-            self.update_target()
+            self.update_target(tau=0.005)
         self.train_step += 1
