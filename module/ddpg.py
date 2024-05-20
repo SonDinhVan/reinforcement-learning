@@ -45,7 +45,8 @@ class DDPGAgent():
                  lr_actor=0.001, lr_critic=0.001,
                  gamma=0.95, batch_size=64,
                  memory_size=10**6, min_start=10000,
-                 min_action=-1, max_action=1, noise_dev=0.2,
+                 min_action=-1, max_action=1,
+                 noise_dev=0.2, min_noise=0.01, noise_decay=0.99,
                  replace_step=500) -> None:
         self.state_size = state_size
         self.action_size = action_size
@@ -68,6 +69,7 @@ class DDPGAgent():
         self.critic_main = self.build_critic_network()
         self.critic_target = self.build_critic_network()
 
+        # update the both target network to be identical with the main networks
         self.update_target(tau=1)
 
         self.opt_actor = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_actor)
@@ -77,6 +79,8 @@ class DDPGAgent():
         self.replace_step = replace_step
 
         self.noise_dev = noise_dev
+        self.min_noise = min_noise
+        self.noise_decay = noise_decay
 
     def build_actor_network(self):
         """
@@ -85,8 +89,8 @@ class DDPGAgent():
         last_init = RandomUniform(minval=-0.003, maxval=0.003)
 
         inputs = Input(shape=(self.state_size,))
-        out = Dense(256, activation="relu")(inputs)
-        out = Dense(256, activation="relu")(out)
+        out = Dense(512, activation="relu")(inputs)
+        out = Dense(512, activation="relu")(out)
         outputs = Dense(self.action_size, activation="tanh", kernel_initializer=last_init)(out)
         outputs = outputs * self.max_action
 
@@ -100,17 +104,17 @@ class DDPGAgent():
         The input is [state, action], output is the Q(s, a)
         """
         state_input = Input(shape=(self.state_size,))
-        state_out = Dense(32, activation="relu")(state_input)
+        # state_out = Dense(32, activation="relu")(state_input)
 
         # Action as input
         action_input = Input(shape=(self.action_size,))
-        action_out = Dense(32, activation="relu")(action_input)
+        # action_out = Dense(32, activation="relu")(action_input)
 
         # Both are passed through separate layer before concatenating
-        concat = Concatenate()([state_out, action_out])
+        concat = Concatenate()([state_input, action_input])
 
-        out = Dense(256, activation="relu")(concat)
-        out = Dense(256, activation="relu")(out)
+        out = Dense(512, activation="relu")(concat)
+        out = Dense(512, activation="relu")(out)
         outputs = Dense(1)(out)
 
         # Outputs single value for give state-action
@@ -202,3 +206,6 @@ class DDPGAgent():
         if self.train_step % self.replace_step == 0:
             self.update_target(tau=0.005)
         self.train_step += 1
+        # reduce the amount of noise for lower level of exloration
+        if self.noise_dev > self.min_noise:
+            self.noise_dev *= self.noise_decay
