@@ -205,7 +205,7 @@ class DDPGAgent():
 
         if self.train_step % self.replace_step == 0:
             self.update_target(tau=0.005)
+            # reduce the amount of noise for lower level of exloration
+            if self.noise_dev > self.min_noise:
+                self.noise_dev *= self.noise_decay
         self.train_step += 1
-        # reduce the amount of noise for lower level of exloration
-        if self.noise_dev > self.min_noise:
-            self.noise_dev *= self.noise_decay
