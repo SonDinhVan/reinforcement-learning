@@ -174,6 +174,7 @@ class DDPGAgent():
         states, actions, rewards, next_states, dones = [tf.convert_to_tensor(x, dtype=tf.float32) for x in zip(*minibatch)]
 
         states = tf.squeeze(states)
+        dones = tf.reshape(dones, shape=(-1, 1))
         rewards = tf.reshape(rewards, shape=(-1, 1))
         next_states = tf.squeeze(next_states)
 
