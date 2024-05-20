@@ -12,12 +12,40 @@ from collections import deque
 # Original paper: CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING: https://arxiv.org/pdf/1509.02971
 
 
+class OUActionNoise:
+    # https://www.wikipedia.org/wiki/Ornstein-Uhlenbeck_process
+    def __init__(self, mean, std_deviation, theta=0.15, dt=1e-2, x_initial=None):
+        self.theta = theta
+        self.mean = mean
+        self.std_dev = std_deviation
+        self.dt = dt
+        self.x_initial = x_initial
+        self.reset()
+
+    def __call__(self):
+        x = (
+            self.x_prev
+            + self.theta * (self.mean - self.x_prev) * self.dt
+            + self.std_dev * np.sqrt(self.dt) * np.random.normal(size=self.mean.shape)
+        )
+        # Store x into x_prev
+        # Makes next noise dependent on current one
+        self.x_prev = x
+        return x
+
+    def reset(self):
+        if self.x_initial is not None:
+            self.x_prev = self.x_initial
+        else:
+            self.x_prev = np.zeros_like(self.mean)
+
+
 class DDPGAgent():
     def __init__(self, state_size, action_size,
                  lr_actor=0.001, lr_critic=0.001,
                  gamma=0.95, batch_size=64,
                  memory_size=10**6, min_start=10000,
-                 min_action=-1, max_action=1, noise=0.1,
+                 min_action=-1, max_action=1, noise_dev=0.2,
                  replace_step=500) -> None:
         self.state_size = state_size
         self.action_size = action_size
@@ -48,7 +76,7 @@ class DDPGAgent():
         self.train_step = 0
         self.replace_step = replace_step
 
-        self.noise = noise
+        self.noise_dev = noise_dev
 
     def build_actor_network(self):
         """
@@ -90,16 +118,25 @@ class DDPGAgent():
 
         return model
 
-    def act(self, state, evaluate=False):
+    def act(self, state, evaluate=False, noise_label='OUNoise'):
         """
         Return the action value based on the input state
 
         evaluate (bool, optional): False for training, True for testing.
+        noise_label: Be assigned either "OUNoise" or "Gaussian".
         """
         actions = self.actor_main(state)
         if not evaluate:
             # we add noise for exploration
-            actions += np.random.normal(0, self.noise, (1, self.action_size))
+            if noise_label == "Gaussian":
+                # Gaussian noise
+                actions += np.random.normal(0, self.noise_dev, (1, self.action_size))
+            elif noise_label == 'OUNoise':
+                # OU noise
+                ou_noise = OUActionNoise(mean=np.zeros(self.action_size), std_deviation=float(self.noise_dev) * np.ones(1))
+                actions += ou_noise()
+            else:
+                print('Noise label not found')
         # we clip it since it might be out of range after adding noise
         actions = np.clip(actions, self.min_action, self.max_action)
 
