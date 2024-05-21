@@ -44,10 +44,10 @@ class DDPGAgent():
     def __init__(self, state_size, action_size,
                  lr_actor=0.001, lr_critic=0.001,
                  gamma=0.95, batch_size=64,
-                 memory_size=10**6, min_start=10000,
+                 memory_size=10**6, training_start=1000,
                  min_action=-1, max_action=1,
                  noise_dev=0.2, min_noise=0.01, noise_decay=0.99,
-                 replace_step=500) -> None:
+                 update_period=10) -> None:
         self.state_size = state_size
         self.action_size = action_size
         self.gamma = gamma
@@ -55,7 +55,7 @@ class DDPGAgent():
         self.memory_size = memory_size
 
         self.memory = deque(maxlen=self.memory_size)
-        self.min_start = min_start
+        self.training_start = training_start
 
         self.lr_actor = lr_actor
         self.lr_critic = lr_critic
@@ -76,7 +76,7 @@ class DDPGAgent():
         self.opt_critic = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_critic)
 
         self.train_step = 0
-        self.replace_step = replace_step
+        self.update_period = update_period
 
         self.noise_dev = noise_dev
         self.min_noise = min_noise
@@ -89,8 +89,10 @@ class DDPGAgent():
         last_init = RandomUniform(minval=-0.003, maxval=0.003)
 
         inputs = Input(shape=(self.state_size,))
-        out = Dense(512, activation="relu")(inputs)
-        out = Dense(512, activation="relu")(out)
+        out = Dense(64, activation="relu")(inputs)
+        out = BatchNormalization()(out)
+        out = Dense(64, activation="relu")(out)
+        out = BatchNormalization()(out)
         outputs = Dense(self.action_size, activation="tanh", kernel_initializer=last_init)(out)
         outputs = outputs * self.max_action
 
@@ -112,9 +114,12 @@ class DDPGAgent():
 
         # Both are passed through separate layer before concatenating
         concat = Concatenate()([state_input, action_input])
+        concat = BatchNormalization()(concat)
 
-        out = Dense(512, activation="relu")(concat)
-        out = Dense(512, activation="relu")(out)
+        out = Dense(64, activation="relu")(concat)
+        out = BatchNormalization()(out)
+        out = Dense(64, activation="relu")(out)
+        out = BatchNormalization()(out)
         outputs = Dense(1)(out)
 
         # Outputs single value for give state-action
@@ -122,15 +127,20 @@ class DDPGAgent():
 
         return model
 
-    def act(self, state, evaluate=False, noise_label='OUNoise'):
+    def act(self, state, use_noise=True, noise_label='OUNoise'):
         """
-        Return the action value based on the input state
+        Get the action according to the state.
 
-        evaluate (bool, optional): False for training, True for testing.
-        noise_label: Be assigned either "OUNoise" or "Gaussian".
+        Args:
+            use_noise (bool, optional): True if noise is applied into actions
+                for exploration.
+            noise_label (str, optional):
+                - 'OUNoise' if using OUNoise
+                - 'Gaussian' if using Gaussian noise
+            If Parameter Noise is used, use_noise should be set to False.
         """
         actions = self.actor_main(state)
-        if not evaluate:
+        if use_noise:
             # we add noise for exploration
             if noise_label == "Gaussian":
                 # Gaussian noise
@@ -139,8 +149,6 @@ class DDPGAgent():
                 # OU noise
                 ou_noise = OUActionNoise(mean=np.zeros(self.action_size), std_deviation=float(self.noise_dev) * np.ones(1))
                 actions += ou_noise()
-            else:
-                print('Noise label not found')
         # we clip it since it might be out of range after adding noise
         actions = np.clip(actions, self.min_action, self.max_action)
 
@@ -150,7 +158,7 @@ class DDPGAgent():
         """
         Store data into the memory.
         """
-        if len(self.memory) == self.min_start:
+        if len(self.memory) == self.training_start:
             print("Collect enough samples, training starting")
         # Append the new data to the memory
         self.memory.append([state, action, reward, next_state, done])
@@ -171,10 +179,10 @@ class DDPGAgent():
         """
         Training using the samples from memory.
         """
-        if len(self.memory) < self.min_start:
+        if len(self.memory) < self.training_start:
             return
         # sample a minibatch from the memory
-        minibatch = random.sample(self.memory, min(self.memory_size, self.batch_size))
+        minibatch = random.sample(self.memory, min(len(self.memory), self.batch_size))
         states, actions, rewards, next_states, dones = [tf.convert_to_tensor(x, dtype=tf.float32) for x in zip(*minibatch)]
 
         states = tf.squeeze(states)
@@ -203,7 +211,7 @@ class DDPGAgent():
         grads2 = tape2.gradient(actor_loss, self.actor_main.trainable_variables)
         self.opt_actor.apply_gradients(zip(grads2, self.actor_main.trainable_variables))
 
-        if self.train_step % self.replace_step == 0:
+        if self.train_step % self.update_period == 0:
             self.update_target(tau=0.005)
             # reduce the amount of noise for lower level of exloration
             if self.noise_dev > self.min_noise:
