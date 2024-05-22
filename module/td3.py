@@ -207,7 +207,7 @@ class TD3Agent():
 
         if self.train_step % self.update_period == 0:
             # in TD3, the policy network is updated less frequent compared to
-            # actor network to improve stability during trainign
+            # the actor networks to improve stability during training
             with tf.GradientTape() as tape3:
                 outputs = self.actor_eval(states)
                 Q_values_1 = self.critic_eval_1([states, outputs])
