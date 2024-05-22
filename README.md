@@ -31,6 +31,19 @@ Further training would likely result in even higher scores.
 
 b) Lunar Lander: \
 Achieved a score of > 250 after about **30 minutes** of training. \
-Note: Sometimes, during training, the ship doesn't move, e.g., it will stay around one position for a long time, leading to a very long training. To deal with this, I stopped an episode when the number of time steps spending on landing exceeds a threshold, e.g., 1000 time steps.
+Note: Sometimes, during training, the ship doesn't move, e.g., it will hover around one position for a long time, leading to a very long training. To deal with this, I stopped an episode when the number of time steps spending on landing exceeds a threshold, e.g., 1000 time steps.
 
 <img src="docs/dqn_lunar_lander/lunar_lander.gif" width="400"/>  <img src="docs/dqn_lunar_lander/dqn_lunalander_loss_over_episodes.png" width="400"/> 
+
+2. Deep Deterministic Policy Gradient (DDPG) \
+DDPG is very unstable during training, and requires a very careful parameter tuning, especially those related to exploration, e.g., noise. I managed to get it run on Pendulum, Lunar Lander continuous, but not on Bipedal walker (YET).
+
+3. Twin Delayed DDPG (TD3) \
+TD3 shows a significant improvement compared to DDPG.
+
+a) Lunar-lander-continous: \
+Achieved a score of > 250 after about **40 minutes** of training, and around **550 episodes**. \
+Note: To avoid the situation when the ship hovering at one spot, I punished the agent in each timestep as follows:
+`reward = reward - 0.1 * 1.001**time_step`
+
+<img src="docs/td3_lunar_lander/td3_lunarlander_continuous.gif" width="400"/>  <img src="docs/td3_lunar_lander/TD3_LunarLander_continuous.png" width="400"/>
