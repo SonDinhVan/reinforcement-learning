@@ -22,6 +22,8 @@ class TD3Agent():
                  min_action=-1, max_action=1,
                  noise_std=0.2, noise_boundary=0.5,
                  min_noise_std=0.05, noise_decay=0.995,
+                 exploration_prob=0.9, exploration_prob_decay=0.99,
+                 min_exploration_prob=0.05,
                  update_period=10) -> None:
         """
         Initialization
@@ -69,6 +71,10 @@ class TD3Agent():
         self.noise_boundary = noise_boundary
         self.min_noise_std = min_noise_std
         self.noise_decay = noise_decay  # noise decay
+
+        self.exploration_prob = exploration_prob
+        self.exploration_prob_decay = exploration_prob_decay
+        self.min_exploration_prob = min_exploration_prob
 
     def build_actor_network(self):
         """
@@ -138,7 +144,8 @@ class TD3Agent():
             During testing, use_noise should be set to False.
         """
         actions = self.actor_eval(state)
-        if use_noise:
+        # exploration
+        if np.random.rand() < self.exploration_prob and use_noise:
             # we add noise for exploration
             if noise_label == "Gaussian":
                 # Gaussian noise
@@ -150,6 +157,7 @@ class TD3Agent():
             # clip the noise within the boundary
             noise = np.clip(noise, -self.noise_boundary, self.noise_boundary)
             actions += noise
+
         # we clip it since it might be out of range after adding noise
         actions = np.clip(actions, self.min_action, self.max_action)
 
