@@ -9,5 +9,6 @@ dependencies:
     - keras==2.15.0
     - matplotlib==3.8.2
     - numpy==1.26.3
-    - tensorflow==2.15.0
+    - tensorflow==2.16.1
     - ipykernel==6.29.3
+    - tf-keras==2.16.0

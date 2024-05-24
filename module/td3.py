@@ -87,8 +87,9 @@ class TD3Agent():
         self.update_target(self.critic_eval_2, self.critic_target_2, tau=1)
 
         # optimizer
-        self.opt_actor = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_actor)
-        self.opt_critic = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_critic)
+        self.opt_actor = Adam(learning_rate=self.lr_actor)
+        self.opt_critic_1 = Adam(learning_rate=self.lr_critic)
+        self.opt_critic_2 = Adam(learning_rate=self.lr_critic)
 
         self.train_step = 0
         self.update_period = update_period
@@ -112,9 +113,7 @@ class TD3Agent():
 
         inputs = Input(shape=(self.state_size,))
         out = Dense(400, activation="relu")(inputs)
-        # out = BatchNormalization()(out)
         out = Dense(300, activation="relu")(out)
-        # out = BatchNormalization()(out)
         outputs = Dense(self.action_size, activation="tanh", kernel_initializer=last_init)(out)
         outputs = outputs * self.max_action
 
@@ -230,7 +229,7 @@ class TD3Agent():
             critic_loss_1 = tf.reduce_mean(tf.square(y - Q_value_current_states_1))
 
         grads1 = tape1.gradient(critic_loss_1, self.critic_eval_1.trainable_variables)
-        self.opt_critic.apply_gradients(zip(grads1, self.critic_eval_1.trainable_variables))
+        self.opt_critic_1.apply_gradients(zip(grads1, self.critic_eval_1.trainable_variables))
 
         # loss value of the 2st critic network
         with tf.GradientTape() as tape2:
@@ -238,7 +237,7 @@ class TD3Agent():
             critic_loss_2 = tf.reduce_mean(tf.square(y - Q_value_current_states_2))
 
         grads2 = tape2.gradient(critic_loss_2, self.critic_eval_2.trainable_variables)
-        self.opt_critic.apply_gradients(zip(grads2, self.critic_eval_2.trainable_variables))
+        self.opt_critic_2.apply_gradients(zip(grads2, self.critic_eval_2.trainable_variables))
 
         if self.train_step % self.update_period == 0:
             # in TD3, the policy network is updated less frequent compared to
