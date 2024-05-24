@@ -26,7 +26,35 @@ class TD3Agent():
                  min_exploration_prob=0.05,
                  update_period=10) -> None:
         """
-        Initialization
+        Initialization.
+
+        Args:
+            state_size (int): Size of state space
+            action_size (int): Size of action space
+            lr_actor (float, optional): learning rate of actor. Defaults to 0.001.
+            lr_critic (float, optional): learning rate of critic. Defaults to 0.001.
+            gamma (float, optional): Discount factor. Defaults to 0.95.
+            batch_size (int, optional): Batch size. Defaults to 64.
+            memory_size (int, optional): Size of memory. Defaults to 10**6.
+            training_start (int, optional): Training starts after collecting
+                this many samples in the memory. Defaults to 1000.
+            min_action (float, optional): Minimum value of action. Defaults to -1.
+            max_action (float, optional): Maximum value of action. Defaults to 1.
+            noise_std (float, optional): Noise standard deviation. Defaults to 0.2.
+            noise_boundary (float, optional): Noise boundary, values outside this
+                range will be clipped. Defaults to 0.5.
+            min_noise_std (float, optional): Minimum noise standard deviation.
+                This will be used in case you use noise decay. Defaults to 0.05.
+            noise_decay (float, optional): Noise decay factor. Defaults to 0.995.
+            exploration_prob (float, optional): Probability of exploration.
+                Defaults to 0.9.
+            exploration_prob_decay (float, optional): Exploration probability decay.
+                Defaults to 0.99.
+            min_exploration_prob (float, optional): Minimum exploration probability.
+                Defaults to 0.05.
+            update_period (int, optional): The policy network is trained, and the
+                target networks will perform soft update after this many timsteps.
+                Defaults to 10.
         """
         self.state_size = state_size
         self.action_size = action_size
@@ -35,13 +63,13 @@ class TD3Agent():
         self.memory_size = memory_size
 
         self.memory = deque(maxlen=self.memory_size)
-        self.training_start = training_start  # training start after this
+        self.training_start = training_start
 
-        self.lr_actor = lr_actor  # learning rate
+        self.lr_actor = lr_actor
         self.lr_critic = lr_critic
 
-        self.min_action = min_action  # minimum value of action
-        self.max_action = max_action  # maximum value of action
+        self.min_action = min_action
+        self.max_action = max_action
 
         # 6 neural networks in total, 2 for actor and 4 for critic
         self.actor_eval = self.build_actor_network()  # actor evaluate network
@@ -63,14 +91,14 @@ class TD3Agent():
         self.opt_critic = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr_critic)
 
         self.train_step = 0
-        self.update_period = update_period  # period to update the target networks
+        self.update_period = update_period
 
-        self.noise_std = noise_std  # noise standard deviation
+        self.noise_std = noise_std
         # noise will be clipped within the noise_boundary before adding to
         # the action value
         self.noise_boundary = noise_boundary
         self.min_noise_std = min_noise_std
-        self.noise_decay = noise_decay  # noise decay
+        self.noise_decay = noise_decay
 
         self.exploration_prob = exploration_prob
         self.exploration_prob_decay = exploration_prob_decay
@@ -108,12 +136,9 @@ class TD3Agent():
 
         # Both are passed through separate layer before concatenating
         concat = Concatenate()([state_input, action_input])
-        # concat = BatchNormalization()(concat)
 
         out = Dense(400, activation="relu")(concat)
-        # out = BatchNormalization()(out)
         out = Dense(300, activation="relu")(out)
-        # out = BatchNormalization()(out)
         outputs = Dense(1)(out)
 
         # Outputs single value for give state-action
@@ -181,7 +206,7 @@ class TD3Agent():
         # sample a minibatch from the memory
         minibatch = random.sample(self.memory, min(len(self.memory), self.batch_size))
         states, actions, rewards, next_states, dones = [tf.convert_to_tensor(x, dtype=tf.float32) for x in zip(*minibatch)]
-
+        # reshape the batch data
         states = tf.squeeze(states)
         dones = tf.reshape(dones, shape=(-1, 1))
         rewards = tf.reshape(rewards, shape=(-1, 1))
@@ -196,9 +221,10 @@ class TD3Agent():
 
         Q_value_next_states_1 = self.critic_target_1([next_states, actions_next_states])
         Q_value_next_states_2 = self.critic_target_2([next_states, actions_next_states])
-
+        # target values using Bell-man equation
         y = rewards + self.gamma * (1 - dones) * tf.math.minimum(Q_value_next_states_1, Q_value_next_states_2)
 
+        # loss value of the 1st critic network
         with tf.GradientTape() as tape1:
             Q_value_current_states_1 = self.critic_eval_1([states, actions])
             critic_loss_1 = tf.reduce_mean(tf.square(y - Q_value_current_states_1))
@@ -206,6 +232,7 @@ class TD3Agent():
         grads1 = tape1.gradient(critic_loss_1, self.critic_eval_1.trainable_variables)
         self.opt_critic.apply_gradients(zip(grads1, self.critic_eval_1.trainable_variables))
 
+        # loss value of the 2st critic network
         with tf.GradientTape() as tape2:
             Q_value_current_states_2 = self.critic_eval_2([states, actions])
             critic_loss_2 = tf.reduce_mean(tf.square(y - Q_value_current_states_2))
@@ -216,6 +243,7 @@ class TD3Agent():
         if self.train_step % self.update_period == 0:
             # in TD3, the policy network is updated less frequent compared to
             # the actor networks to improve stability during training
+            # loss value for the actor network
             with tf.GradientTape() as tape3:
                 outputs = self.actor_eval(states)
                 Q_values_1 = self.critic_eval_1([states, outputs])
