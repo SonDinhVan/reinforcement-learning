@@ -23,13 +23,13 @@ The experiments were conducted on a MacBook Pro 16-inch M1 with CPU. The GPU was
 **Discussion**
 
 **1. Deep-Q Network (DQN)** \
-a) Cart-pole: \
+**a) Cart-pole:** \
 Achieved a score of > 1000 after about **10 minutes** of training.
 Further training would likely result in even higher scores.
 
 <img src="docs/dqn_cartpole/dqn_cartpole.gif" width="400"/>  <img src="docs/dqn_cartpole/dqn_cartpole_score_over_episodes.png" width="400"/> 
 
-b) Lunar Lander: \
+**b) Lunar Lander:** \
 Achieved a score of > 250 after about **30 minutes** of training. \
 Note: Sometimes, during training, the ship doesn't move, e.g., it will hover around one position for a long time, leading to a very long training. To deal with this, I stopped an episode when the number of time steps spending on landing exceeds a threshold, e.g., 1000 time steps.
 
@@ -40,7 +40,7 @@ DDPG is very unstable during training, and requires a very careful parameter tun
 
 **3. Twin Delayed DDPG (TD3)** \
 TD3 shows a significant improvement compared to DDPG. \
-a) Bipedal Walker - Hardcore=False: \
+**a) Bipedal Walker - Hardcore=False:** \
 Achived a score of > 300 within **2600** episodes of training, **10 hours**. This takes long because I let `render_mode='human'`. In general, the walker learns how to balance within the first 500 episodes, knows how to walk after 1500 episodes, and start to improve from there. I stopped the training early, but it should solve the task.
 Note: To encourage the walker walks faster, I shaped the reward function as:
 `reward = reward + 10 * horizontal velocity`
@@ -49,7 +49,7 @@ This will punish the walker if he walks backward, and give him more reward if he
 <img src="docs/td3_bipedal_walker/td3_bipedal_walker_easy.gif" width="400"/>  <img src="docs/td3_bipedal_walker/td3_bipedal_walker_easy.png" width="400"/>
 
 
-b) Lunar Lander - continous=True: \
+**b) Lunar Lander - continous=True:** \
 Achieved a score of > 250 after about **40 minutes** of training, and around **550 episodes**. \
 Note: To avoid the situation when the ship hovering at one spot, I punished the agent in each timestep as follows:
 `reward = reward - 0.1 * 1.001**time_step`
