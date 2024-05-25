@@ -40,8 +40,11 @@ DDPG is very unstable during training, and requires a very careful parameter tun
 
 3. Twin Delayed DDPG (TD3) \
 TD3 shows a significant improvement compared to DDPG.
+a) Bipedal Walker - Hardcore=False: \
+<img src="docs/td3_bipedal_walker/td3_bipedal_walker_easy.gif" width="400"/>  <img src="/Users/sondinhvan/Documents/GitHub/reinforcement-learning/docs/td3_bipedal_walker/td3_bipedal_walker_easy.png" width="400"/>
 
-a) Lunar-lander-continous: \
+
+b) Lunar Lander - continous=True: \
 Achieved a score of > 250 after about **40 minutes** of training, and around **550 episodes**. \
 Note: To avoid the situation when the ship hovering at one spot, I punished the agent in each timestep as follows:
 `reward = reward - 0.1 * 1.001**time_step`
