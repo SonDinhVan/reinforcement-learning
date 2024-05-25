@@ -41,7 +41,8 @@ DDPG is very unstable during training, and requires a very careful parameter tun
 3. Twin Delayed DDPG (TD3) \
 TD3 shows a significant improvement compared to DDPG.
 a) Bipedal Walker - Hardcore=False: \
-<img src="docs/td3_bipedal_walker/td3_bipedal_walker_easy.gif" width="400"/>  <img src="/Users/sondinhvan/Documents/GitHub/reinforcement-learning/docs/td3_bipedal_walker/td3_bipedal_walker_easy.png" width="400"/>
+
+<img src="docs/td3_bipedal_walker/td3_bipedal_walker_easy.gif" width="400"/>  <img src="docs/td3_bipedal_walker/td3_bipedal_walker_easy.png" width="400"/>
 
 
 b) Lunar Lander - continous=True: \
