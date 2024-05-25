@@ -39,8 +39,12 @@ Note: Sometimes, during training, the ship doesn't move, e.g., it will hover aro
 DDPG is very unstable during training, and requires a very careful parameter tuning, especially those related to exploration, e.g., noise. I managed to get it run on Pendulum, Lunar Lander continuous, but not on Bipedal walker (YET).
 
 3. Twin Delayed DDPG (TD3) \
-TD3 shows a significant improvement compared to DDPG.
+TD3 shows a significant improvement compared to DDPG. \
 a) Bipedal Walker - Hardcore=False: \
+Achived a score of > 250 within **2600** episodes of training, **10 hours**. This takes long because I let `render_mode='human'`. In general, the walker learns how to balance within the first 500 episodes, knows how to walk after 1500 episodes, and start to improve from there. I stopped the training early, but it will require more training to completely solve the task.
+Note: To encourage the walker walks faster, I shaped the reward function as:
+`reward = reward + 10 * horizontal velocity`
+This will punish the walker if he walks backward, and give him more reward if he walks forward.
 
 <img src="docs/td3_bipedal_walker/td3_bipedal_walker_easy.gif" width="400"/>  <img src="docs/td3_bipedal_walker/td3_bipedal_walker_easy.png" width="400"/>
 
