@@ -3,14 +3,14 @@ For convenience, both training and testing are in Jupyter notebooks.
 
 **Algorithms Implemented**
 1. Deep-Q Network (DQN)
-2. To be added...
+2. Deep Deterministic Policy Gradient (DDPG)
+3. Twin Delay DDPG (TD3)
 
 **Games/Environments Tested**
 1. Cart-pole
-2. Lunar Lander (discrete actions)
-3. Lunar Lander (continuous actions)
-4. Bipedal Walker (Hardcore = False)
-5. To be added...
+2. Lunar Lander (discrete and continuous actions)
+3. Bipedal Walker (Hardcore = False)
+4. To be added...
 
 **Dependencies**
 
@@ -22,7 +22,7 @@ The experiments were conducted on a MacBook Pro 16-inch M1 with CPU. The GPU was
 
 **Discussion**
 
-1. Deep-Q Network (DQN) \
+**1. Deep-Q Network (DQN)** \
 a) Cart-pole: \
 Achieved a score of > 1000 after about **10 minutes** of training.
 Further training would likely result in even higher scores.
@@ -35,10 +35,10 @@ Note: Sometimes, during training, the ship doesn't move, e.g., it will hover aro
 
 <img src="docs/dqn_lunar_lander/lunar_lander.gif" width="400"/>  <img src="docs/dqn_lunar_lander/dqn_lunalander_loss_over_episodes.png" width="400"/> 
 
-2. Deep Deterministic Policy Gradient (DDPG) \
+**2. Deep Deterministic Policy Gradient (DDPG)** \
 DDPG is very unstable during training, and requires a very careful parameter tuning, especially those related to exploration, e.g., noise. I managed to get it run on Pendulum, Lunar Lander continuous, but not on Bipedal walker (YET).
 
-3. Twin Delayed DDPG (TD3) \
+**3. Twin Delayed DDPG (TD3)** \
 TD3 shows a significant improvement compared to DDPG. \
 a) Bipedal Walker - Hardcore=False: \
 Achived a score of > 300 within **2600** episodes of training, **10 hours**. This takes long because I let `render_mode='human'`. In general, the walker learns how to balance within the first 500 episodes, knows how to walk after 1500 episodes, and start to improve from there. I stopped the training early, but it should solve the task.
