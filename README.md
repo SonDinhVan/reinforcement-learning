@@ -9,7 +9,7 @@ For convenience, both training and testing are in Jupyter notebooks.
 1. Cart-pole
 2. Lunar Lander (discrete actions)
 3. Lunar Lander (continuous actions)
-4. Bipedal Walker
+4. Bipedal Walker (Hardcore = False)
 5. To be added...
 
 **Dependencies**
@@ -41,7 +41,7 @@ DDPG is very unstable during training, and requires a very careful parameter tun
 3. Twin Delayed DDPG (TD3) \
 TD3 shows a significant improvement compared to DDPG. \
 a) Bipedal Walker - Hardcore=False: \
-Achived a score of > 250 within **2600** episodes of training, **10 hours**. This takes long because I let `render_mode='human'`. In general, the walker learns how to balance within the first 500 episodes, knows how to walk after 1500 episodes, and start to improve from there. I stopped the training early, but it will require more training to completely solve the task.
+Achived a score of > 300 within **2600** episodes of training, **10 hours**. This takes long because I let `render_mode='human'`. In general, the walker learns how to balance within the first 500 episodes, knows how to walk after 1500 episodes, and start to improve from there. I stopped the training early, but it should solve the task.
 Note: To encourage the walker walks faster, I shaped the reward function as:
 `reward = reward + 10 * horizontal velocity`
 This will punish the walker if he walks backward, and give him more reward if he walks forward.
