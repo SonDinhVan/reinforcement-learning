@@ -231,7 +231,7 @@ class TD3Agent():
         grads1 = tape1.gradient(critic_loss_1, self.critic_eval_1.trainable_variables)
         self.opt_critic_1.apply_gradients(zip(grads1, self.critic_eval_1.trainable_variables))
 
-        # loss value of the 2st critic network
+        # loss value of the 2nd critic network
         with tf.GradientTape() as tape2:
             Q_value_current_states_2 = self.critic_eval_2([states, actions])
             critic_loss_2 = tf.reduce_mean(tf.square(y - Q_value_current_states_2))
